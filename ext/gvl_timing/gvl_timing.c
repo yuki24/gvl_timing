@@ -46,7 +46,11 @@ void internal_thread_event_cb(rb_event_flag_t event, const rb_internal_thread_ev
     struct gvl_timer *timer = data;
 
     if (!ruby_native_thread_p()) return;
+#ifdef HAVE_RB_INTERNAL_THREAD_SPECIFIC_GET
+    VALUE thread = event_data->thread;
+#else
     VALUE thread = rb_thread_current();
+#endif
 //#if HAVE_RB_INTERNAL_THREAD_EVENT_DATA_T_THREAD
 //#else
 //#endif

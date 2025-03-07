@@ -7,4 +7,5 @@ require "mkmf"
 # selectively, or entirely remove this flag.
 append_cflags("-fvisibility=hidden")
 
+have_func("rb_internal_thread_specific_get", "ruby/thread.h") # 3.3+
 create_makefile("gvl_timing/gvl_timing")
