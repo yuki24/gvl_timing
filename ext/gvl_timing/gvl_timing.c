@@ -171,6 +171,27 @@ VALUE gvl_timer_idle_duration(VALUE obj) {
     return ULL2NUM(get_timer(obj)->timings[GVL_STATE_IDLE]);
 }
 
+VALUE gvl_timer_active(VALUE obj) {
+    return get_timer(obj)->running ? Qtrue : Qfalse;
+}
+
+VALUE gvl_timer_current_state(VALUE obj) {
+    switch (get_timer(obj)->prev_state) {
+      case GVL_STATE_RUNNING:
+        return ID2SYM(rb_intern("running"));
+      case GVL_STATE_STALLED:
+        return ID2SYM(rb_intern("stalled"));
+      case GVL_STATE_IDLE:
+        return ID2SYM(rb_intern("idle"));
+      default:
+        return Qnil;
+    }
+}
+
+VALUE gvl_timer_monotonic_state_changed_ns(VALUE obj) {
+    return ULL2NUM(get_timer(obj)->prev_timestamp);
+}
+
 VALUE gvl_timer_yields_count(VALUE obj) {
     return ULL2NUM(get_timer(obj)->yields_count);
 }
@@ -193,5 +214,8 @@ Init_gvl_timing(void)
     rb_define_method(rb_cTimer, "stalled_duration_ns", gvl_timer_stalled_duration, 0);
     rb_define_method(rb_cTimer, "idle_duration_ns", gvl_timer_idle_duration, 0);
 
+    rb_define_method(rb_cTimer, "active?", gvl_timer_active, 0);
+    rb_define_method(rb_cTimer, "current_state", gvl_timer_current_state, 0);
+    rb_define_method(rb_cTimer, "monotonic_state_changed_ns", gvl_timer_monotonic_state_changed_ns, 0);
     rb_define_method(rb_cTimer, "yields_count", gvl_timer_yields_count, 0);
 }

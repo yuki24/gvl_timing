@@ -87,4 +87,49 @@ class TestGVLTiming < Minitest::Test
     expected = "#<GVLTiming::Timer total=0.10s running=0.00s idle=0.10s stalled=0.00s yields=1>"
     assert_equal expected, timer.inspect
   end
+
+  def test_current_state
+    timer = GVLTiming::Timer.new
+    timer.start
+
+    idle_thread = Thread.new do
+      sleep 0.05
+      timer.current_state
+    end
+
+    sleep 0.1
+
+    state_while_sleeping = idle_thread.join.value
+
+    assert_equal :idle, state_while_sleeping
+    assert_equal :running, timer.current_state
+  ensure
+    timer.stop
+  end
+
+  def test_monotonic_state_changed_ns
+    timer = GVLTiming::Timer.new
+    timer.start
+
+    initial_state_changed = timer.monotonic_state_changed_ns
+
+    sleep 0.1
+
+    last_state_changed = timer.monotonic_state_changed_ns
+
+    assert_in_delta 100_000_000, (last_state_changed - initial_state_changed), 5_000_000
+  ensure
+    timer.stop
+  end
+
+  def test_running
+    timer = GVLTiming::Timer.new
+    timer.start
+
+    assert timer.active?, "timer not active"
+
+    timer.stop
+
+    assert !timer.active?, "timer still active"
+  end
 end
